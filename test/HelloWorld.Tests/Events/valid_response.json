@@ -1,0 +1,9 @@
+{
+  "statusCode": 200,
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "multiValueHeaders": null,
+  "body": "{\"message\":\"Hello-World\",\"location\":\"10.0.0.1\"}",
+  "isBased64Encoded": false
+}

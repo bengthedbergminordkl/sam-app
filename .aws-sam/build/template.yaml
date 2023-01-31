@@ -1,0 +1,95 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'Sample SAM Template for sam-app
+
+  '
+Globals:
+  Function:
+    Timeout: 10
+    MemorySize: 128
+Resources:
+  HellowWorldEventBridge:
+    Type: AWS::Events::EventBus
+    Properties:
+      Name: HelloWorldBus
+  HellowWorldLogsRule:
+    Type: AWS::Events::Rule
+    Properties:
+      EventBusName:
+        Ref: HellowWorldEventBridge
+      EventPattern:
+        source:
+        - prefix: ''
+      Name: All-Events-CloudWatch
+      State: ENABLED
+      Targets:
+      - Arn:
+          Fn::GetAtt:
+          - HellowWorldCloudWatchLog
+          - Arn
+        Id: LogTarget0
+  HellowWorldCloudWatchLog:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/events/HelloWorldBus
+      RetentionInDays: 7
+  LogGroupForEventsPolicy:
+    Type: AWS::Logs::ResourcePolicy
+    Properties:
+      PolicyName: EventBridgeToCWLogsPolicy
+      PolicyDocument:
+        Fn::Sub: "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n \
+          \     \"Sid\": \"EventBridgetoCWLogsCreateLogStreamPolicy\",\n      \"Effect\"\
+          : \"Allow\",\n      \"Principal\": {\n        \"Service\": [\n         \
+          \ \"events.amazonaws.com\"\n        ]\n      },\n      \"Action\": [\n \
+          \       \"logs:CreateLogStream\"\n      ],\n      \"Resource\": [\n    \
+          \    \"${HellowWorldCloudWatchLog.Arn}\"\n      ]\n    },\n    {\n     \
+          \ \"Sid\": \"EventBridgetoCWLogsPutLogEventsPolicy\",\n      \"Effect\"\
+          : \"Allow\",\n      \"Principal\": {\n        \"Service\": [\n         \
+          \ \"events.amazonaws.com\"\n        ]\n      },\n      \"Action\": [\n \
+          \       \"logs:PutLogEvents\"\n      ],\n      \"Resource\": [\n       \
+          \ \"${HellowWorldCloudWatchLog.Arn}\"\n      ],\n      \"Condition\": {\n\
+          \        \"ArnEquals\": {\"AWS:SourceArn\": \"${HellowWorldLogsRule.Arn}\"\
+          }\n      }\n    }\n  ]\n}    \n"
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: HelloWorldFunction
+      Handler: HelloWorld::HelloWorld.Function::FunctionHandler
+      Runtime: dotnet6
+      Architectures:
+      - arm64
+      MemorySize: 256
+      Policies:
+      - EventBridgePutEventsPolicy:
+          EventBusName:
+            Ref: HellowWorldEventBridge
+      Environment:
+        Variables:
+          EVENT_BUS_NAME:
+            Ref: HellowWorldEventBridge
+      Events:
+        HelloWorld:
+          Type: Api
+          Properties:
+            Path: /hello
+            Method: get
+    Metadata:
+      SamResourceId: HelloWorldFunction
+Outputs:
+  HelloWorldApi:
+    Description: API Gateway endpoint URL for Prod stage for Hello World function
+    Value:
+      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/
+  HelloWorldFunction:
+    Description: Hello World Lambda Function ARN
+    Value:
+      Fn::GetAtt:
+      - HelloWorldFunction
+      - Arn
+  HelloWorldFunctionIamRole:
+    Description: Implicit IAM Role created for Hello World function
+    Value:
+      Fn::GetAtt:
+      - HelloWorldFunctionRole
+      - Arn

@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "source"
+      ]
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "ipAddress": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ipAddress"
+      ]
+    }
+  },
+  "required": [
+    "metadata",
+    "data"
+  ]
+
+}

@@ -1,0 +1,9 @@
+{
+  "statusCode": 400,
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "multiValueHeaders": null,
+  "body": "{\"message\":\"Missing required query string named 'message'\"}",
+  "isBased64Encoded": false
+}
